@@ -15,7 +15,7 @@ namespace grpcPrpjectTest.Services
         {
             return Task.FromResult(new HelloReply
             {
-                Message = "Hello " + request.Name
+                Message = "Hello my friend " + request.Name
             });
         }
     }

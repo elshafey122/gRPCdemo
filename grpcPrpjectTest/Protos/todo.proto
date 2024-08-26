@@ -2,36 +2,47 @@ syntax = "proto3";
 
 option csharp_namespace = "grpcPrpjectTest.Protos";
 
-import "google/api/annotations.proto";
+import "google/api/annotations.proto";  // we use google library to make grpc service as http apis
 
 package todo;
 
 service Todo {
     // Create
     rpc CreateToDo(CreateToDoRequest) returns (CreateToDoResponse) {
-        option (google.api.http) = {
-            get: "/v1/todo"
+        option (google.api.http) = {  
+            post: "/v1/todo",
+            body: "*"
         };
     }
 
     // Read single
     rpc ReadToDo(ReadToDoRequest) returns (ReadToDoResponse) {
-        
+        option (google.api.http) = {
+            get: "/v1/todo/{id}"
+        };
     }
 
     // Read list
     rpc ListToDo(GetAllRequest) returns (GetAllResponse) {
-        
+        option (google.api.http) = {
+            get: "/v1/todo"
+        };
     }
 
     // Update
     rpc UpdateToDo (UpdateToDoRequest) returns (UpdateToDoResponse) {
-        
+        option (google.api.http) = {
+            put: "/v1/todo",
+            body: "*"
+
+        };
     }
 
     // Delete
     rpc DeleteToDo (DeleteToDoRequest) returns (DeleteToDoResponse) {
-        
+         option (google.api.http) = {
+            delete: "/v1/todo/{id}",
+        };
     }
 }
 
