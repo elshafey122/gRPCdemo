@@ -2,6 +2,7 @@
 using grpcPrpjectTest.Context;
 using grpcPrpjectTest.Models;
 using grpcPrpjectTest.Protos;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using static Google.Rpc.Context.AttributeContext.Types;
@@ -16,6 +17,7 @@ namespace grpcPrpjectTest.Services
             _context = context;
         }
 
+        [Authorize(AuthenticationSchemes ="BasicAuth",Roles ="Device")]
         public override async Task<CreateToDoResponse> CreateToDo(CreateToDoRequest request, ServerCallContext context)
         {
             if (request.Title == string.Empty || request.Description == string.Empty)
@@ -39,6 +41,7 @@ namespace grpcPrpjectTest.Services
 
         }
 
+        [Authorize(AuthenticationSchemes = "BasicAuth", Roles = "Device")]
         public override async Task<ReadToDoResponse> ReadToDo(ReadToDoRequest request , ServerCallContext context )
         {
             if (request.Id <= 0)
@@ -59,15 +62,42 @@ namespace grpcPrpjectTest.Services
                 Title = todoitem.Title,
                 ToDoStatus = todoitem.ToDoStatus,
             });
-
         }
 
+        [Authorize(AuthenticationSchemes = "BasicAuth", Roles = "Device")]
+        public override async Task<ReadToDoResponse> StreamReadToDo(IAsyncStreamReader<ReadToDoRequest> requestStream, ServerCallContext context)
+        {
+            //return base.StreamReadToDo(requestStream, context);
+            var tssk = Task.Run(async () =>
+            {
+                await foreach (var item in requestStream.ReadAllAsync())
+                {
+                    var todoitem = await _context.todoItems.FirstOrDefaultAsync(x => x.Id == item.Id);
+                    if (todoitem == null)
+                    {
+                        throw new RpcException(new Status(StatusCode.NotFound, $"No Task with id {item.Id}"));
+                    }
+
+                    return await Task.FromResult(new ReadToDoResponse()
+                    {
+                        Id = todoitem.Id,
+                        Description = todoitem.Description,
+                        Title = todoitem.Title,
+                        ToDoStatus = todoitem.ToDoStatus,
+                    });
+                }
+                return null;
+            });
+            return null;
+        }
+
+        [Authorize(AuthenticationSchemes = "BasicAuth", Roles = "Device")]
         public override async Task<GetAllResponse> ListToDo(GetAllRequest request, ServerCallContext context)
         {
             var response = new GetAllResponse();
             var todoitems = await _context.todoItems.ToListAsync();
 
-            foreach ( var todoitem in todoitems )
+            foreach (var todoitem in todoitems)
             {
                 response.ToDo.Add(new ReadToDoResponse()
                 {
@@ -80,6 +110,41 @@ namespace grpcPrpjectTest.Services
             return await Task.FromResult(response);
         }
 
+        [Authorize(AuthenticationSchemes = "BasicAuth", Roles = "Device")]
+        public override async Task streamListToDo(GetAllRequest request, IServerStreamWriter<ReadToDoResponse> responseStream, ServerCallContext context)
+        {
+            var todoitems = new List<ReadToDoResponse>()
+            {
+                new ReadToDoResponse
+                {
+                    Id=6,
+                    Description="stream",
+                    Title="stream",
+                    ToDoStatus = "stream"
+                },
+                new ReadToDoResponse
+                {
+                    Id=7,
+                    Description="stream",
+                    Title="stream",
+                    ToDoStatus = "stream"
+                }
+            };
+            foreach (var item in todoitems)
+            {
+                await Task.Delay(3000);
+                var ReadToDoResponse = new ReadToDoResponse
+                {
+                    Id = item.Id,
+                    Description = item.Description,
+                    Title = item.Title,
+                    ToDoStatus = item.ToDoStatus
+                };
+                await responseStream.WriteAsync(ReadToDoResponse);
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = "BasicAuth", Roles = "Device")]
         public override async Task<UpdateToDoResponse> UpdateToDo(UpdateToDoRequest request, ServerCallContext context)
         {
 
@@ -106,6 +171,7 @@ namespace grpcPrpjectTest.Services
             });
         }
 
+        [Authorize(AuthenticationSchemes = "BasicAuth", Roles = "Device")]
         public override async Task<DeleteToDoResponse> DeleteToDo(DeleteToDoRequest request, ServerCallContext context)
         {
             if (request.Id <= 0)

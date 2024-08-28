@@ -11,8 +11,15 @@ service Todo {
     // Read single
     rpc ReadToDo(ReadToDoRequest) returns (ReadToDoResponse); 
 
+    rpc StreamReadToDo(stream ReadToDoRequest) returns (ReadToDoResponse); 
+
     // Read list
-    rpc ListToDo(GetAllRequest) returns (GetAllResponse) ;
+    rpc ListToDo(GetAllRequest) returns (GetAllResponse);
+
+
+    rpc streamListToDo(GetAllRequest) returns (stream ReadToDoResponse) {
+    }
+    
 
     // Update
     rpc UpdateToDo (UpdateToDoRequest) returns (UpdateToDoResponse) ;

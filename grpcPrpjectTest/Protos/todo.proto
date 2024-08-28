@@ -22,12 +22,27 @@ service Todo {
         };
     }
 
+    rpc StreamReadToDo(stream ReadToDoRequest) returns (ReadToDoResponse){
+        option (google.api.http) = {
+            get: "/v1/todo/{id}"
+        };
+    }
+
+
     // Read list
     rpc ListToDo(GetAllRequest) returns (GetAllResponse) {
         option (google.api.http) = {
             get: "/v1/todo"
         };
     }
+
+
+    rpc streamListToDo(GetAllRequest) returns (stream ReadToDoResponse) {
+        option (google.api.http) = {
+            get: "/v1/streamtodo"
+        };
+    }
+
 
     // Update
     rpc UpdateToDo (UpdateToDoRequest) returns (UpdateToDoResponse) {
