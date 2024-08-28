@@ -36,6 +36,7 @@ namespace grpcPrpjectTest.Client
             Console.WriteLine(replay.Id);
             Console.WriteLine(replay2.Id);
 
+             
             //get todo
             var getTodo = new ReadToDoRequest { Id = 1 };
             var replay3 = await clienttodo.ReadToDoAsync(getTodo);
